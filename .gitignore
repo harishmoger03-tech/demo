@@ -1,0 +1,4 @@
+work/audio/*.wav
+work/frames/
+work/qc_stills/
+__pycache__/

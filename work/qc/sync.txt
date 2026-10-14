@@ -1,0 +1,9 @@
+audio whole  : best lag +2.00 ms  corr 0.930
+audio 0-6s   : best lag +2.00 ms  corr 0.936
+audio 6-12s  : best lag +1.88 ms  corr 0.933
+audio 12-19s : best lag +1.88 ms  corr 0.919
+frames src/out: 571 585
+motion V1: best lag +0 frames, r=0.766
+motion V2: best lag +0 frames, r=0.983
+motion V3: best lag +0 frames, r=0.716
+motion V4: best lag +0 frames, r=0.874
