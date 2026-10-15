@@ -1,0 +1,83 @@
+{
+ "_note": "Portable editorial-film-edit look. No timecodes, people or media here; project.json holds those.",
+ "palette": {
+  "cream": "#F1ECE2",
+  "paper": "#E8DFCC",
+  "paper_white": "#F5F2EB",
+  "charcoal": "#26231F",
+  "ink": "#2E2A25",
+  "ochre": "#C39248",
+  "muted_red": "#A2483B",
+  "grey_rule": "#B9B2A6"
+ },
+ "fonts": {
+  "_roles": "Exactly three roles / families.",
+  "sans": {
+   "family": "Inter",
+   "heavy": "Inter-ExtraBold.otf",
+   "medium": "Inter-SemiBold.otf"
+  },
+  "serif": {
+   "family": "Instrument Serif",
+   "italic": "instrument-serif-latin-400-italic.woff",
+   "roman": "instrument-serif-latin-400-normal.woff"
+  },
+  "mono": {
+   "family": "IBM Plex Mono",
+   "regular": "ibm-plex-mono-latin-400-normal.woff",
+   "medium": "ibm-plex-mono-latin-500-normal.woff"
+  }
+ },
+ "grain": {
+  "_doc": "Fresh monochrome grain every output frame; amplitude in 8-bit code values (1 sigma).",
+  "amplitude": 3.6,
+  "size_px": 1.15,
+  "luma_weight": "midtones"
+ },
+ "bloom": {
+  "threshold": 0.68,
+  "strength": 0.14,
+  "radius_px": 22
+ },
+ "grade_presenter": {
+  "_doc": "Soft, bright colour; skin stays natural.",
+  "black": 10,
+  "white": 247,
+  "gamma": 0.96,
+  "saturation": 0.9,
+  "warmth": 0.01
+ },
+ "grade_bw": {
+  "_doc": "Bright, neutral B&W for inserts: open mids, controlled blacks.",
+  "black": 22,
+  "white": 246,
+  "gamma": 0.86
+ },
+ "type_motion": {
+  "stepped_fps": 15,
+  "collage_steps_fps": 10,
+  "enter": 0.36,
+  "exit": 0.24,
+  "drift_em_per_s": 0.012
+ },
+ "split": {
+  "entry_s": 0.4,
+  "exit_s": 0.34,
+  "presenter_side": "left",
+  "at": 0.5
+ },
+ "captions": {
+  "role": "sans",
+  "size_px": 46,
+  "y": 1500,
+  "max_w": 940,
+  "colour": "cream",
+  "shadow": 0.85,
+  "split_max_w": 470
+ },
+ "paper": {
+  "blotch": 0.014,
+  "speck": 0.008,
+  "fibre_density": 7.142857142857143e-05
+ }
+}

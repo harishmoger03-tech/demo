@@ -163,13 +163,50 @@ def paste(base, spr, cx, cy, alpha=1.0, angle=0.0, scale=1.0):
 # ---------------------------------------------------------------- inserts
 PW = int(W * (1 - ST["split"]["at"]))           # insert panel width (right side)
 _cache = {}
+AR = ST["archival"]
+LUMA = np.array([0.2126, 0.7152, 0.0722], np.float32)
 
 
-def receipt_panel(t):
-    if "receipt_bg" not in _cache:
-        _cache["receipt_bg"] = to_im(grade_bw(paper(PW, H, PAL["paper"], 11)))
+def surface(w, h, seed):
+    """Shared archival table surface for every insert: textured card under one soft key light."""
+    key = ("surface", w, h, seed)
+    if key not in _cache:
+        tex = paper(w, h, hexrgb(AR["surface"]), seed, fibre=True, blotch=AR["surface_blotch"])
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        d = np.sqrt(((xx - W * AR["light_xy"][0]) / (1.1 * W)) ** 2 + ((yy - H * AR["light_xy"][1]) / (0.95 * H)) ** 2)
+        light = AR["light_hi"] - (AR["light_hi"] - AR["light_lo"]) * np.clip(d, 0, 1) ** 1.4
+        _cache[key] = to_im(tex * light[..., None]).convert("RGBA")
+    return _cache[key].copy()
+
+
+def obj_shadow(spr):
+    sh = AR["shadow"]
+    return shadowed(spr, blur=sh["blur"], off=tuple(sh["off"]), alpha=sh["alpha"])
+
+
+def archival(im, t, t0, t1):
+    """Treat a drawn insert as filmed archival footage: slow rostrum push + drift,
+    lens softness, bright neutral B&W. Muted-red ink keeps a touch of its colour."""
+    w, h = im.size
+    k = clamp((t - t0) / max(t1 - t0, 1e-3))
+    z = lerp(1.02, AR["rostrum_push"], ease_io(k))            # starts slightly in so the drift has margin
+    dx = AR["rostrum_drift_px"] * (ease_io(k) - 0.5)
+    cw, ch = w / z, h / z
+    x0 = clamp((w - cw) / 2 + dx / z, 0, w - cw)
+    y0 = (h - ch) * 0.45
+    rgb = im.convert("RGB").resize((w, h), Image.BICUBIC, box=(x0, y0, x0 + cw, y0 + ch))
+    rgb = rgb.filter(ImageFilter.GaussianBlur(AR["lens_soft_px"]))
+    a = np.asarray(rgb, np.float32) / 255
+    bw = grade_bw(a)
+    red = np.clip((a[..., 0] - np.maximum(a[..., 1], a[..., 2]) - 0.08) / 0.15, 0, 1)[..., None]
+    out = bw + red * (a - (a @ LUMA)[..., None]) * AR["ink_keep"]
+    return to_im(out).convert("RGBA")
+
+
+def receipt_panel(t, odx=0.0):
+    if "thermal" not in _cache:
         _cache["thermal"] = paper(460, 2600, PAL["paper_white"], 12, fibre=False, blotch=0.006)
-    panel = _cache["receipt_bg"].convert("RGBA")
+    panel = surface(PW, H, 11)
     mono = font("mono", "medium", 36)
     lines = []                                   # (text, t_print, colour)
     for ln in PJ["receipt_lines"]:
@@ -177,62 +214,53 @@ def receipt_panel(t):
     feeds = PJ["receipt_feed"]
     lines.append(("- - - - - - - - - - - -", feeds[0], PAL["grey_rule"]))
     lines.append(("TOTAL", feeds[1], PAL["ink"]))
-    # receipt strip: printed lines; the paper advances (stepped) as it prints
     ts = stepped(t, 3.2, ST["type_motion"]["stepped_fps"])
     n_printed = sum(1 for _, tp, _ in lines if ts >= tp)
     strip_h = 260 + 74 * max(n_printed, 1) + 160
     strip = to_im(_cache["thermal"][:strip_h]).convert("RGBA")
     d = ImageDraw.Draw(strip)
-    # zigzag torn top + bottom
     mask = Image.new("L", strip.size, 255)
     md = ImageDraw.Draw(mask)
-    for x in range(0, strip.width + 14, 14):
+    for x in range(0, strip.width + 14, 14):                  # torn top + bottom
         md.polygon([(x, 0), (x + 7, 9), (x + 14, 0)], fill=0)
         md.polygon([(x, strip_h), (x + 7, strip_h - 9), (x + 14, strip_h)], fill=0)
     y = 120
-    for i, (text, tp, col) in enumerate(lines):
+    for text, tp, col in lines:
         if ts < tp:
             continue
-        k = clamp((ts - tp) / 0.4)                        # typewriter reveal, stepped
-        shown = text[: max(1, int(len(text) * k))]
-        d.text((40, y), shown, font=mono, fill=col + (255,))
+        k = clamp((ts - tp) / 0.4)                            # typewriter reveal, stepped
+        d.text((40, y), text[: max(1, int(len(text) * k))], font=mono, fill=col + (255,))
         if text.isupper() and text != "TOTAL" and k >= 1:
-            tw = d.textlength(text, font=mono)
-            dx = 40 + tw + 14
+            dx = 40 + d.textlength(text, font=mono) + 14
             while dx < 420:
                 d.ellipse((dx, y + 24, dx + 4, y + 28), fill=PAL["grey_rule"] + (255,))
                 dx += 14
-        if text == "TOTAL" and ts >= feeds[2]:            # muted-red stamp ring, stop-motion
+        if text == "TOTAL" and ts >= feeds[2]:                # muted-red ink ring, stop-motion
             ks = clamp((ts - feeds[2]) / 0.2)
             rr = int(lerp(110, 84, ks))
             cx, cy = 40 + d.textlength("TOTAL", font=mono) / 2, y + 22
-            d.ellipse((cx - rr, cy - rr * 0.55, cx + rr, cy + rr * 0.55), outline=PAL["muted_red"] + (230,), width=4)
+            d.ellipse((cx - rr, cy - rr * 0.55, cx + rr, cy + rr * 0.55), outline=PAL["muted_red"] + (235,), width=4)
         y += 74
     strip.putalpha(mask)
-    # the strip is anchored to the printer slot near the bottom and grows upward
     slot_y = 1350
     feed_jump = 0
-    for ft in feeds:                                      # small paper jolt on each feed
+    for ft in feeds:                                          # small paper jolt on each feed
         if 0 <= ts - ft < 0.2:
             feed_jump = 14 * (1 - (ts - ft) / 0.2)
-    sp = shadowed(strip, blur=16, off=(0, 12), alpha=0.35)
+    sp = obj_shadow(strip)
     pad = (sp.height - strip.height) // 2
     top = slot_y - strip.height - feed_jump
-    panel.alpha_composite(sp, (int(PW / 2 - sp.width / 2), int(top - pad)))
-    # printer slot: a charcoal bar the paper comes out of
-    pd = ImageDraw.Draw(panel)
-    pd.rounded_rectangle((40, slot_y - 6, PW - 40, slot_y + 40), radius=10, fill=PAL["charcoal"] + (255,))
-    pd.rectangle((70, slot_y - 2, PW - 70, slot_y + 6), fill=(10, 9, 8, 255))
+    panel.alpha_composite(sp, (int(PW / 2 + odx - sp.width / 2), int(top - pad)))
+    pd = ImageDraw.Draw(panel)                                # printer slot the paper feeds from
+    pd.rounded_rectangle((40 + odx, slot_y - 6, PW - 40 + odx, slot_y + 40), radius=10, fill=PAL["charcoal"] + (255,))
+    pd.rectangle((70 + odx, slot_y - 2, PW - 70 + odx, slot_y + 6), fill=(10, 9, 8, 255))
     return panel
 
 
-def ledger_panel(t):
-    if "ledger_bg" not in _cache:
-        bg = paper(PW, H, PAL["charcoal"], 21, blotch=0.03)
-        _cache["ledger_bg"] = to_im(bg)
+def ledger_panel(t, odx=0.0):
+    if "card" not in _cache:
         cw, ch = 460, 940
-        card = paper(cw, ch, PAL["cream"], 22, blotch=0.02)
-        cim = to_im(grade_bw(card)).convert("RGBA")
+        cim = to_im(paper(cw, ch, PAL["cream"], 22, blotch=0.02)).convert("RGBA")
         d = ImageDraw.Draw(cim)
         d.line([(0, 120), (cw, 120)], fill=PAL["muted_red"] + (220,), width=3)
         for i in range(1, 9):
@@ -243,7 +271,7 @@ def ledger_panel(t):
             d.rectangle((34, yy, 66, yy + 32), outline=PAL["ink"] + (255,), width=3)
             d.text((88, yy - 2), name, font=mono, fill=PAL["ink"] + (255,))
         _cache["card"] = cim
-    panel = _cache["ledger_bg"].convert("RGBA")
+    panel = surface(PW, H, 21)
     card = _cache["card"].copy()
     d = ImageDraw.Draw(card)
     lc = PJ["ledger_check"]
@@ -260,31 +288,20 @@ def ledger_panel(t):
         else:
             q = (k - 0.5) / 0.5
             d.line([p0, p1, (lerp(p1[0], p2[0], q), lerp(p1[1], p2[1], q))], fill=PAL["muted_red"] + (255,), width=6, joint="curve")
-    paste(panel, shadowed(card, blur=18, off=(0, 14), alpha=0.5), PW / 2, 1000, angle=-2.0)
+    paste(panel, obj_shadow(card), PW / 2 + odx, 1000, angle=-2.0)
     return panel
 
 
 def tickets_frame(t, t0):
-    if "tickets_bg" not in _cache:
-        bg = paper(W, H, PAL["ochre"], 31, blotch=0.02)
-        bgi = to_im(bg).convert("RGBA")
-        d = ImageDraw.Draw(bgi)
-        red = PAL["muted_red"] + (170,)
-        for (cx, cy) in [(140, 260), (940, 260), (140, 1420), (940, 1420)]:   # registration marks
-            d.ellipse((cx - 22, cy - 22, cx + 22, cy + 22), outline=red, width=2)
-            d.line([(cx - 36, cy), (cx + 36, cy)], fill=red, width=2)
-            d.line([(cx, cy - 36), (cx, cy + 36)], fill=red, width=2)
-        for y in (330, 1350):
-            d.line([(80, y), (1000, y)], fill=red, width=1)
-        _cache["tickets_bg"] = bgi
+    if "tk" not in _cache:
         tk = []
         for i, tkt in enumerate(PJ["tickets"]):
             tw, th = 720, 220
-            pim = to_im(grade_bw(paper(tw, th, PAL["cream"], 40 + i, blotch=0.02))).convert("RGBA")
+            pim = to_im(paper(tw, th, PAL["cream"], 40 + i, blotch=0.02)).convert("RGBA")
             d = ImageDraw.Draw(pim)
             d.rectangle((10, 10, tw - 11, th - 11), outline=PAL["muted_red"] + (200,), width=2)
             for yy in range(14, th - 14, 18):                 # perforation
-                d.ellipse((168, yy, 175, yy + 7), fill=PAL["ochre"] + (255,))
+                d.ellipse((168, yy, 175, yy + 7), fill=hexrgb(AR["surface"]) + (255,))
             mono = font("mono", "regular", 24)
             lab = Image.new("RGBA", (180, 40), (0, 0, 0, 0))
             ImageDraw.Draw(lab).text((0, 4), "SUBSCRIPTION", font=mono, fill=PAL["ink"] + (230,))
@@ -295,17 +312,20 @@ def tickets_frame(t, t0):
                    fill=PAL["ink"] + (255,))
             notch = Image.new("L", (tw, th), 255)
             nd = ImageDraw.Draw(notch)
-            for cx in (171,):
-                nd.ellipse((cx - 16, -16, cx + 16, 16), fill=0)
-                nd.ellipse((cx - 16, th - 16, cx + 16, th + 16), fill=0)
+            nd.ellipse((171 - 16, -16, 171 + 16, 16), fill=0)
+            nd.ellipse((171 - 16, th - 16, 171 + 16, th + 16), fill=0)
             pim.putalpha(notch)
-            tk.append(shadowed(pim, blur=12, off=(4, 12), alpha=0.45))
+            tk.append(obj_shadow(pim))
         _cache["tk"] = tk
-    im = _cache["tickets_bg"].copy()
+    im = surface(W, H, 31)
     d = ImageDraw.Draw(im)
-    # red technical line draws across as the sheet arrives
-    k = ease_out((t - t0) / 0.6)
-    d.line([(80, 1395), (80 + 920 * k, 1395)], fill=PAL["muted_red"] + (200,), width=2)
+    red = PAL["muted_red"] + (150,)
+    for (cx, cy) in [(140, 260), (940, 260), (140, 1420), (940, 1420)]:   # registration marks
+        d.ellipse((cx - 22, cy - 22, cx + 22, cy + 22), outline=red, width=2)
+        d.line([(cx - 36, cy), (cx + 36, cy)], fill=red, width=2)
+        d.line([(cx, cy - 36), (cx, cy + 36)], fill=red, width=2)
+    k = ease_out((t - t0) / 0.6)                              # technical line draws across
+    d.line([(80, 1395), (80 + 920 * k, 1395)], fill=red, width=2)
     pos = [(560, 520, -5), (520, 780, 3), (570, 1040, -2.5), (520, 1300, 4)]
     cf = ST["type_motion"]["collage_steps_fps"]
     for spr, tkt, (x, y, ang) in zip(_cache["tk"], PJ["tickets"], pos):
@@ -316,6 +336,10 @@ def tickets_frame(t, t0):
         e = ease_out(k)
         paste(im, spr, x, y - 160 * (1 - e), angle=ang + 10 * (1 - e), scale=lerp(1.08, 1.0, e))
     return im
+
+
+def scene_by_id(i):
+    return next(s for s in PJ["scenes"] if s["id"] == i)
 
 
 # ---------------------------------------------------------------- presenter geometry
@@ -458,7 +482,6 @@ def draw_captions(im, t, pw):
 
 # ---------------------------------------------------------------- film pass
 _gr = np.random.default_rng(0)
-LUMA = np.array([0.2126, 0.7152, 0.0722], np.float32)
 
 
 def film(img, n):
@@ -490,7 +513,7 @@ def frame_at(n, src):
     occl = None                                            # presenter cut-out for text-behind
     insert_panel = None
     if s["kind"] == "fullscreen":
-        canvas = tickets_frame(t, s["t0"]).convert("RGB")
+        canvas = archival(tickets_frame(t, s["t0"]), t, s["t0"], s["t1"]).convert("RGB")
     else:
         scale, ox, pw, e = presenter_state(t)
         vis = max(1, int(math.ceil(pw)))                     # only the visible presenter panel
@@ -499,13 +522,10 @@ def frame_at(n, src):
         canvas = Image.new("RGB", (W, H), PAL["charcoal"])
         canvas.paste(to_im(grade_presenter(pres)), (0, 0))
         if pw < W - 0.5:                                    # split: insert panel slides in from the right
-            if s["kind"] == "split":
-                ins = s["insert"]
-                tt = t
-            else:
-                prev = PJ["scenes"][PJ["scenes"].index(s) - 1]
-                ins, tt = prev["insert"], t
-            panel = receipt_panel(tt) if ins == "receipt" else ledger_panel(tt)
+            sc_split = s if s["kind"] == "split" else PJ["scenes"][PJ["scenes"].index(s) - 1]
+            odx = (1 - e) * AR["parallax_px"]                # contents trail the panel edge
+            raw = receipt_panel(t, odx) if sc_split["insert"] == "receipt" else ledger_panel(t, odx)
+            panel = archival(raw, t, sc_split["t0"], sc_split["t1"] + ST["split"]["exit_s"])
             insert_panel = (panel, int(round(pw)))
         else:
             m = mask_at(n).resize((W, H), Image.BICUBIC, box=presenter_box(scale, ox, W))
@@ -514,17 +534,21 @@ def frame_at(n, src):
         if s.get("enter_dissolve") and t - s["t0"] < s["enter_dissolve"]:
             prev = PJ["scenes"][PJ["scenes"].index(s) - 1]
             k = ease_io((t - s["t0"]) / s["enter_dissolve"])
-            canvas = Image.blend(tickets_frame(t, prev["t0"]).convert("RGB"), canvas, k)
+            canvas = Image.blend(archival(tickets_frame(t, prev["t0"]), t, prev["t0"], prev["t1"]).convert("RGB"), canvas, k)
     im = canvas.convert("RGBA")
     if insert_panel:
         panel, x = insert_panel
         pnl = panel.copy()
         for lay in PJ["emphasis"]:
             if lay.get("panel") == "insert":
-                col = PAL["ink"] if lay["id"] == "cost" else PAL["cream"]
-                draw_type(pnl, lay, t, col)
+                draw_type(pnl, lay, t, PAL["cream"])          # clean type above the footage treatment
+        sw = AR["seam_shadow_px"]                             # the panel casts a soft shadow on the presenter
+        g = np.linspace(0, AR["seam_shadow_alpha"], sw) ** 1.6
+        band = Image.fromarray(np.tile((g * 255).astype(np.uint8), (H, 1)), "L")
+        sh = Image.new("RGBA", (sw, H), (8, 7, 6, 255))
+        sh.putalpha(band)
+        im.alpha_composite(sh, (max(0, x - sw), 0)) if x - sw >= 0 else None
         im.alpha_composite(pnl.crop((0, 0, min(PW, W - x), H)), (x, 0))
-        ImageDraw.Draw(im).line([(x, 0), (x, H)], fill=(0, 0, 0, 90), width=2)
     # emphasis words in the presenter frame (behind the subject when flagged)
     tl = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     for lay in PJ["emphasis"]:

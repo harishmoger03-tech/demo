@@ -30,14 +30,16 @@
  },
  "grain": {
   "_doc": "Fresh monochrome grain every output frame; amplitude in 8-bit code values (1 sigma).",
-  "amplitude": 3.6,
-  "size_px": 1.15,
-  "luma_weight": "midtones"
+  "amplitude": 2.2,
+  "size_px": 1.1,
+  "luma_weight": "midtones",
+  "_v2": "toned down from 3.6 (v1)"
  },
  "bloom": {
-  "threshold": 0.68,
-  "strength": 0.14,
-  "radius_px": 22
+  "threshold": 0.6,
+  "strength": 0.26,
+  "radius_px": 30,
+  "_v2": "stronger, wider, still soft (v1: 0.68 / 0.14 / 22)"
  },
  "grade_presenter": {
   "_doc": "Soft, bright colour; skin stays natural.",
@@ -61,7 +63,7 @@
   "drift_em_per_s": 0.012
  },
  "split": {
-  "entry_s": 0.4,
+  "entry_s": 0.42,
   "exit_s": 0.34,
   "presenter_side": "left",
   "at": 0.5
@@ -79,5 +81,31 @@
   "blotch": 0.014,
   "speck": 0.008,
   "fibre_density": 7.142857142857143e-05
+ },
+ "archival": {
+  "_doc": "Every insert is treated as filmed archival rostrum footage: one shared table surface and key light, matching shadows, slow push + drift, lens softness, bright B&W grade (muted-red ink kept).",
+  "surface": "#5E5A53",
+  "surface_blotch": 0.03,
+  "light_xy": [
+   0.22,
+   0.12
+  ],
+  "light_hi": 1.18,
+  "light_lo": 0.62,
+  "shadow": {
+   "blur": 18,
+   "off": [
+    10,
+    18
+   ],
+   "alpha": 0.55
+  },
+  "rostrum_push": 1.06,
+  "rostrum_drift_px": 12,
+  "lens_soft_px": 0.75,
+  "ink_keep": 0.85,
+  "parallax_px": 80,
+  "seam_shadow_px": 56,
+  "seam_shadow_alpha": 0.38
  }
 }
