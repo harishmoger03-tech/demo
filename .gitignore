@@ -2,3 +2,9 @@ work/audio/*.wav
 work/frames/
 work/qc_stills/
 __pycache__/
+editorial/out/Raw_Editorial_v*.mp4
+editorial/out/Raw_Editorial_master.mp4
+editorial/work/*.wav
+editorial/work/*.log
+editorial/work/qc_stills/
+remotion/node_modules/

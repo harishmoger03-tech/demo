@@ -1,0 +1,9 @@
+P1: best lag +0 frames  r=0.995
+S1: best lag +0 frames  r=0.135
+P2: best lag +0 frames  r=0.773
+P3: best lag +0 frames  r=0.990
+S2: best lag +1 frames  r=0.545
+P4: best lag +0 frames  r=0.627
+S1 presenter panel vs source x290-830: best lag +0 frames r=0.998
+S2 presenter panel vs source x290-830: best lag +0 frames r=0.998
+audio (voice+foley) vs source: lag +0.00 ms, r=0.9988

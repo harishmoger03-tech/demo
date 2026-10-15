@@ -1,0 +1,8 @@
+P1: best lag +0 frames  r=0.995
+S1: best lag +0 frames  r=0.131
+P2: best lag +0 frames  r=0.769
+P3: best lag +0 frames  r=0.990
+S2: best lag +1 frames  r=0.545
+P4: best lag +0 frames  r=0.625
+S1 split (settled): presenter panel vs source x290-830: best lag +0 frames r=0.998
+S2 split (settled): presenter panel vs source x290-830: best lag +0 frames r=0.998
