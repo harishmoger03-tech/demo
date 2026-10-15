@@ -1,0 +1,173 @@
+{
+ "swipe_right": {
+  "source": "Wooosh Transition/Swipe Right.wav",
+  "file": "sfx/swipe_right.wav",
+  "duration": 1.257,
+  "peak": 0.54,
+  "gain_db": 0.1,
+  "source_lufs": -16.1,
+  "trim": null
+ },
+ "swoosh_transition": {
+  "source": "Wooosh Transition/Swoosh_Transition_Sound_Effect_mp3.mp3",
+  "file": "sfx/swoosh_transition.wav",
+  "duration": 2.5,
+  "peak": 0.78,
+  "gain_db": 5.82,
+  "source_lufs": -22.01,
+  "trim": null
+ },
+ "wind_wipe_high": {
+  "source": "Wooosh Transition/Wind Wipe High.wav",
+  "file": "sfx/wind_wipe_high.wav",
+  "duration": 1.8,
+  "peak": 0.67,
+  "gain_db": 2.45,
+  "source_lufs": -18.45,
+  "trim": null
+ },
+ "whoosh_18": {
+  "source": "Woosh/Whoosh 18.wav",
+  "file": "sfx/whoosh_18.wav",
+  "duration": 1.043,
+  "peak": 0.51,
+  "gain_db": 1.46,
+  "source_lufs": -17.46,
+  "trim": null
+ },
+ "eene_5_running_by": {
+  "source": "Woosh/EEnE Whoosh 5 running by.wav",
+  "file": "sfx/eene_5_running_by.wav",
+  "duration": 1.5,
+  "peak": 0.24,
+  "gain_db": -1.41,
+  "source_lufs": -14.59,
+  "trim": null
+ },
+ "mouth_pop": {
+  "source": "SFX/Mouth Pop.wav",
+  "file": "sfx/mouth_pop.wav",
+  "duration": 1.053,
+  "peak": 0.37,
+  "gain_db": 1.51,
+  "source_lufs": -21.67,
+  "trim": null
+ },
+ "ui_10": {
+  "source": "Ui sfx/Ui 10.mp3",
+  "file": "sfx/ui_10.wav",
+  "duration": 0.744,
+  "peak": 0.09,
+  "gain_db": 5.9,
+  "source_lufs": -24.37,
+  "trim": null
+ },
+ "ui_6": {
+  "source": "Ui sfx/Ui 6.wav",
+  "file": "sfx/ui_6.wav",
+  "duration": 0.5,
+  "peak": 0.08,
+  "gain_db": 3.32,
+  "source_lufs": -20.15,
+  "trim": null
+ },
+ "data_04": {
+  "source": "SFX/Data 04.wav",
+  "file": "sfx/data_04.wav",
+  "duration": 1.0,
+  "peak": 0.36,
+  "gain_db": 7.64,
+  "source_lufs": -23.64,
+  "trim": 1.0
+ },
+ "camera_shutter": {
+  "source": "SFX/Camera Shutter.mp3",
+  "file": "sfx/camera_shutter.wav",
+  "duration": 0.627,
+  "peak": 0.13,
+  "gain_db": 13.7,
+  "source_lufs": -32.95,
+  "trim": null
+ },
+ "swish_boom": {
+  "source": "Ui sfx/Swish Boom.mp3",
+  "file": "sfx/swish_boom.wav",
+  "duration": 3.422,
+  "peak": 0.4,
+  "gain_db": -1.36,
+  "source_lufs": -14.64,
+  "trim": null
+ },
+ "scifi_click_6": {
+  "source": "Ui sfx/SCI FI CLICK 6.MP3",
+  "file": "sfx/scifi_click_6.wav",
+  "duration": 1.75,
+  "peak": 0.52,
+  "gain_db": 2.04,
+  "source_lufs": -20.87,
+  "trim": null
+ },
+ "success_bell": {
+  "source": "Ui sfx/freesound_community-success_bell-6776.mp3",
+  "file": "sfx/success_bell.wav",
+  "duration": 2.0,
+  "peak": 0.12,
+  "gain_db": 17.93,
+  "source_lufs": -33.93,
+  "trim": 2.0
+ },
+ "eene_6_jet_stop": {
+  "source": "Woosh/EEnE Whoosh 6 jet stop.wav",
+  "file": "sfx/eene_6_jet_stop.wav",
+  "duration": 2.246,
+  "peak": 1.6,
+  "gain_db": -4.51,
+  "source_lufs": -11.49,
+  "trim": null
+ },
+ "whoosh_back": {
+  "source": "Wooosh Transition/Whoosh Back.wav",
+  "file": "sfx/whoosh_back.wav",
+  "duration": 1.9,
+  "peak": 1.53,
+  "gain_db": 7.81,
+  "source_lufs": -24.23,
+  "trim": null
+ },
+ "bell_transition": {
+  "source": "SFX/Bell Transition.wav",
+  "file": "sfx/bell_transition.wav",
+  "duration": 4.152,
+  "peak": 1.92,
+  "gain_db": -1.15,
+  "source_lufs": -16.03,
+  "trim": null
+ },
+ "impact_mid_bass": {
+  "source": "SFX/Impact Mid Bass.wav",
+  "file": "sfx/impact_mid_bass.wav",
+  "duration": 2.5,
+  "peak": 0.09,
+  "gain_db": 0.0,
+  "source_lufs": -17.76,
+  "trim": 2.5
+ },
+ "deep_impact": {
+  "source": "SFX/Deep Impact.wav",
+  "file": "sfx/deep_impact.wav",
+  "duration": 2.5,
+  "peak": 0.3,
+  "gain_db": -1.0,
+  "source_lufs": -16.02,
+  "trim": 2.5
+ },
+ "impact_cinematic": {
+  "source": "SFX/Impact Cinematic.wav",
+  "file": "sfx/impact_cinematic.wav",
+  "duration": 2.5,
+  "peak": 0.17,
+  "gain_db": -0.3,
+  "source_lufs": -15.7,
+  "trim": 2.5
+ }
+}

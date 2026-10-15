@@ -8,3 +8,5 @@ editorial/work/*.wav
 editorial/work/*.log
 editorial/work/qc_stills/
 remotion/node_modules/
+remotion/public/Raw.mp4
+remotion/out/
